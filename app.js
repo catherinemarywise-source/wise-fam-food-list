@@ -4,10 +4,10 @@
  */
 
 // ==========================================================================
-// 1. SUPABASE CONFIGURATION (Replace with your actual Supabase credentials)
+// 1. SUPABASE CONFIGURATION
 // ==========================================================================
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_KEY = 'YOUR_SUPABASE_KEY';
+const SUPABASE_URL = 'https://mukikordwhmnyywxxaqb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_8Q1-IIXVnhaSnLb221-Vyw_y_9TM';
 
 // ==========================================================================
 // 2. STATE MANAGEMENT & DOM ELEMENTS
