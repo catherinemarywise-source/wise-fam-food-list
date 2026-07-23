@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>FreshBasket — Family Grocery List</title>
+  <meta name="description" content="A modern, collaborative family grocery list web app powered by real-time sync.">
+
+  <!-- iOS Mobile Web App Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FreshBasket">
+  <meta name="theme-color" content="#f8fafc">
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Supabase JS v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Ambient Glow -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <main class="app-container" id="app">
+
+    <!-- Header Section -->
+    <header class="app-header">
+      <div class="brand-badge">
+        <span class="pulse-dot"></span>
+        <span id="syncStatusText">Live Sync Active</span>
+      </div>
+      <div class="header-main">
+        <div class="header-title-group">
+          <div class="app-icon">
+            <i class="fa-solid fa-basket-shopping"></i>
+          </div>
+          <div>
+            <h1 class="app-title">FreshBasket</h1>
+            <p class="app-subtitle">Collaborative Family Grocery List</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Card -->
+      <div class="stats-card">
+        <div class="stat-item">
+          <span class="stat-value" id="statTotal">0</span>
+          <span class="stat-label">Total Items</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-value" id="statRemaining">0</span>
+          <span class="stat-label">To Buy</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-value" id="statCompleted">0</span>
+          <span class="stat-label">Completed</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Supabase Config Warning Banner (Visible if default keys are unchanged) -->
+    <div id="configBanner" class="config-banner" style="display: none;">
+      <div class="config-banner-icon">
+        <i class="fa-solid fa-cloud-bolt"></i>
+      </div>
+      <div class="config-banner-content">
+        <strong>Demo Local Mode Active</strong>
+        <p>Using instant local storage. Add your Supabase credentials in <code>app.js</code> for multi-device live sync!</p>
+      </div>
+      <button class="config-dismiss-btn" id="dismissBannerBtn" aria-label="Dismiss banner">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Input Form Section -->
+    <section class="card form-card">
+      <form id="groceryForm" class="grocery-form">
+        <div class="input-row">
+          <div class="input-wrapper main-input-wrapper">
+            <i class="fa-solid fa-cart-plus input-icon"></i>
+            <input 
+              type="text" 
+              id="itemInput" 
+              placeholder="Add item (e.g., Organic Milk, Avocados...)" 
+              autocomplete="off"
+              required
+            >
+          </div>
+
+          <div class="input-wrapper qty-wrapper">
+            <input 
+              type="text" 
+              id="qtyInput" 
+              placeholder="Qty" 
+              value="1"
+              autocomplete="off"
+            >
+          </div>
+        </div>
+
+        <div class="form-bottom-row">
+          <div class="select-wrapper">
+            <i class="fa-solid fa-layer-group select-icon"></i>
+            <select id="categorySelect" aria-label="Select Category">
+              <option value="Produce">🥬 Produce</option>
+              <option value="Dairy">🧀 Dairy & Refrigerated</option>
+              <option value="Bakery">🍞 Bakery & Bread</option>
+              <option value="Pantry" selected>🥫 Pantry & Grains</option>
+              <option value="Meat">🥩 Meat & Seafood</option>
+              <option value="Frozen">🧊 Frozen Foods</option>
+              <option value="Beverages">🧃 Beverages</option>
+              <option value="Household">🧼 Household & Cleaning</option>
+              <option value="Other">📦 Snacks & Other</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          </div>
+
+          <button type="submit" id="addBtn" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add Item</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Toolbar Section (Filters & Search) -->
+    <section class="toolbar-section">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Search grocery items..." autocomplete="off">
+        <button id="clearSearchBtn" class="clear-search-btn" style="display: none;" aria-label="Clear Search">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+
+      <div class="filter-tabs" id="filterTabs">
+        <button class="tab-btn active" data-filter="all">All</button>
+        <button class="tab-btn" data-filter="active">To Buy</button>
+        <button class="tab-btn" data-filter="completed">Completed</button>
+      </div>
+    </section>
+
+    <!-- Category Quick Filters Slider -->
+    <section class="category-pills" id="categoryPills">
+      <button class="pill-btn active" data-category="ALL">All Categories</button>
+      <button class="pill-btn" data-category="Produce">🥬 Produce</button>
+      <button class="pill-btn" data-category="Dairy">🧀 Dairy</button>
+      <button class="pill-btn" data-category="Bakery">🍞 Bakery</button>
+      <button class="pill-btn" data-category="Pantry">🥫 Pantry</button>
+      <button class="pill-btn" data-category="Meat">🥩 Meat</button>
+      <button class="pill-btn" data-category="Frozen">🧊 Frozen</button>
+      <button class="pill-btn" data-category="Beverages">🧃 Beverages</button>
+      <button class="pill-btn" data-category="Household">🧼 Household</button>
+      <button class="pill-btn" data-category="Other">📦 Other</button>
+    </section>
+
+    <!-- Grocery List Container -->
+    <section class="list-section">
+      <div id="groceryList" class="grocery-list">
+        <!-- Dynamic items populated by JavaScript -->
+      </div>
+
+      <!-- Empty State View -->
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-icon">
+          <i class="fa-solid fa-basket-shopping"></i>
+        </div>
+        <h3 id="emptyTitle">Your Basket is Empty!</h3>
+        <p id="emptyMessage">Add your first item using the form above to get started with your family grocery list.</p>
+      </div>
+    </section>
+
+    <!-- Bottom Actions Bar -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span id="itemsSummaryText">0 items remaining</span>
+      </div>
+      <div class="footer-actions">
+        <button id="clearCompletedBtn" class="btn btn-secondary" disabled>
+          <i class="fa-solid fa-broom"></i>
+          <span>Clear Completed</span>
+        </button>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Toast Notification System -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
