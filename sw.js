@@ -3,7 +3,7 @@
  * Enables offline access and PWA caching
  */
 
-const CACHE_NAME = 'wise-fam-food-v1';
+const CACHE_NAME = 'wise-fam-food-v2';
 const STATIC_ASSETS = [
   './',
   'index.html',

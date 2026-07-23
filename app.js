@@ -133,25 +133,44 @@ function initSupabase() {
   const isValidUrl = SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_URL.startsWith('http');
   const isValidKey = SUPABASE_KEY && SUPABASE_KEY !== 'YOUR_SUPABASE_KEY';
 
-  if (isValidUrl && isValidKey && window.supabase) {
-    try {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      isSupabaseConfigured = true;
-      syncStatusText.textContent = 'Supabase Sync Active';
-      configBanner.style.display = 'none';
-      subscribeToRealtime();
-    } catch (err) {
-      console.warn('Failed to initialize Supabase client:', err);
+  const connectClient = () => {
+    if (isValidUrl && isValidKey && window.supabase) {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        isSupabaseConfigured = true;
+        if (syncStatusText) syncStatusText.textContent = 'Supabase Sync Active';
+        if (configBanner) configBanner.style.display = 'none';
+        subscribeToRealtime();
+      } catch (err) {
+        console.warn('Failed to initialize Supabase client:', err);
+        setupFallbackMode();
+      }
+    } else {
       setupFallbackMode();
     }
+  };
+
+  if (window.supabase) {
+    connectClient();
   } else {
-    setupFallbackMode();
+    // Retry polling briefly if CDN script is loaded asynchronously
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (window.supabase) {
+        clearInterval(interval);
+        connectClient();
+      } else if (attempts >= 15) {
+        clearInterval(interval);
+        setupFallbackMode();
+      }
+    }, 100);
   }
 }
 
 function setupFallbackMode() {
   isSupabaseConfigured = false;
-  syncStatusText.textContent = 'Local Mode (Offline)';
+  if (syncStatusText) syncStatusText.textContent = 'Local Mode (Offline)';
   if (configBanner) configBanner.style.display = 'flex';
 }
 
