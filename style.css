@@ -713,9 +713,17 @@ body {
   display: inline-flex;
 }
 
+/* Item Meta Row & Badges */
+.item-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
 /* Category Badge Styling */
 .category-badge {
-  align-self: flex-start;
   font-size: 0.73rem;
   font-weight: 700;
   padding: 3px 10px;
@@ -724,6 +732,24 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+.added-by-badge {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #71717a;
+  background-color: #f4f4f5;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #e4e4e7;
+}
+
+.added-by-badge i {
+  color: #ec4899;
+  font-size: 0.75rem;
 }
 
 .badge-Produce { background: var(--cat-produce-bg); color: var(--cat-produce); }

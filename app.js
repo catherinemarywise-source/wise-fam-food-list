@@ -23,6 +23,7 @@ let searchQuery = '';
 const groceryForm = document.getElementById('groceryForm');
 const itemInput = document.getElementById('itemInput');
 const qtyInput = document.getElementById('qtyInput');
+const addedByInput = document.getElementById('addedByInput');
 const categorySelect = document.getElementById('categorySelect');
 const groceryListEl = document.getElementById('groceryList');
 const emptyStateEl = document.getElementById('emptyState');
@@ -59,6 +60,7 @@ const categoryIcons = {
 
 // LocalStorage Keys
 const LOCAL_STORAGE_KEY = 'freshbasket_groceries_v1';
+const USER_NAME_KEY = 'freshbasket_user_name';
 
 // ==========================================================================
 // 3. INITIALIZATION & SUPABASE / LOCALSTORAGE SETUP
@@ -66,8 +68,16 @@ const LOCAL_STORAGE_KEY = 'freshbasket_groceries_v1';
 document.addEventListener('DOMContentLoaded', () => {
   initSupabase();
   setupEventListeners();
+  restoreSavedUserName();
   loadItems();
 });
+
+function restoreSavedUserName() {
+  if (addedByInput) {
+    const savedName = localStorage.getItem(USER_NAME_KEY);
+    if (savedName) addedByInput.value = savedName;
+  }
+}
 
 function initSupabase() {
   const isValidUrl = SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_URL.startsWith('http');
@@ -180,20 +190,28 @@ function saveToLocalStorage() {
 
 function getInitialSeedData() {
   return [
-    { id: '1', title: 'Organic Whole Milk', quantity: '2 Cartons', category: 'Dairy', completed: false, created_at: new Date().toISOString() },
-    { id: '2', title: 'Fresh Bananas & Apples', quantity: '1 Bunch', category: 'Produce', completed: false, created_at: new Date().toISOString() },
-    { id: '3', title: 'Sourdough Bread', quantity: '1 Loaf', category: 'Bakery', completed: true, created_at: new Date().toISOString() },
-    { id: '4', title: 'Rolled Oats & Granola', quantity: '1 Box', category: 'Pantry', completed: false, created_at: new Date().toISOString() }
+    { id: '1', title: 'Organic Whole Milk', quantity: '2 Cartons', category: 'Dairy', added_by: 'Cathy', completed: false, created_at: new Date().toISOString() },
+    { id: '2', title: 'Fresh Bananas & Apples', quantity: '1 Bunch', category: 'Produce', added_by: 'Alex', completed: false, created_at: new Date().toISOString() },
+    { id: '3', title: 'Sourdough Bread', quantity: '1 Loaf', category: 'Bakery', added_by: 'Mom', completed: true, created_at: new Date().toISOString() },
+    { id: '4', title: 'Rolled Oats & Granola', quantity: '1 Box', category: 'Pantry', added_by: 'Dad', completed: false, created_at: new Date().toISOString() }
   ];
 }
 
 // Add Item
-async function addItem(title, quantity, category) {
+async function addItem(title, quantity, category, addedBy) {
+  const authorName = addedBy && addedBy.trim() ? addedBy.trim() : 'Family Member';
+  
+  // Persist name in localStorage for convenience
+  if (addedBy && addedBy.trim()) {
+    localStorage.setItem(USER_NAME_KEY, addedBy.trim());
+  }
+
   const newItem = {
     id: Date.now().toString(),
     title: title.trim(),
     quantity: quantity.trim() || '1',
     category: category,
+    added_by: authorName,
     completed: false,
     created_at: new Date().toISOString()
   };
@@ -211,6 +229,7 @@ async function addItem(title, quantity, category) {
           title: newItem.title,
           quantity: newItem.quantity,
           category: newItem.category,
+          added_by: newItem.added_by,
           completed: newItem.completed
         }])
         .select();
@@ -320,7 +339,8 @@ function renderUI() {
 
     const matchesSearch = 
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase());
+      item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.added_by && item.added_by.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return matchesFilter && matchesCategory && matchesSearch;
   });
@@ -356,6 +376,7 @@ function createItemCard(item) {
   card.dataset.id = item.id;
 
   const categoryEmoji = categoryIcons[item.category] || '📦';
+  const addedByName = item.added_by || 'Family Member';
 
   card.innerHTML = `
     <div class="item-main">
@@ -367,9 +388,14 @@ function createItemCard(item) {
           <span class="item-title">${escapeHtml(item.title)}</span>
           ${item.quantity ? `<span class="item-qty">${escapeHtml(item.quantity)}</span>` : ''}
         </div>
-        <span class="category-badge badge-${escapeHtml(item.category)}">
-          ${categoryEmoji} ${escapeHtml(item.category)}
-        </span>
+        <div class="item-meta-row">
+          <span class="category-badge badge-${escapeHtml(item.category)}">
+            ${categoryEmoji} ${escapeHtml(item.category)}
+          </span>
+          <span class="added-by-badge">
+            <i class="fa-solid fa-circle-user"></i> ${escapeHtml(addedByName)}
+          </span>
+        </div>
       </div>
     </div>
     <div class="item-actions">
@@ -417,10 +443,11 @@ function setupEventListeners() {
     const title = itemInput.value;
     const qty = qtyInput.value;
     const cat = categorySelect.value;
+    const addedBy = addedByInput ? addedByInput.value : '';
 
     if (!title.trim()) return;
 
-    addItem(title, qty, cat);
+    addItem(title, qty, cat, addedBy);
     itemInput.value = '';
     qtyInput.value = '1';
     itemInput.focus();
