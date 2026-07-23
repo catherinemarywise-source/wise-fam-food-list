@@ -1,5 +1,5 @@
 /**
- * FreshBasket — Collaborative Family Grocery Web App
+ * Wise Fam Food List — Collaborative Family Grocery Web App
  * Real-time sync with Supabase JS v2 & LocalStorage Fallback
  */
 
@@ -95,7 +95,7 @@ function updateUKDateDisplay() {
     const formattedTime = now.toLocaleTimeString('en-GB', timeOptions);
 
     // Update document title dynamically
-    document.title = `FreshBasket — ${formattedDate}`;
+    document.title = `Wise Fam Food List — ${formattedDate}`;
 
     // Update header badge
     const ukDateSpan = document.getElementById('ukDateSpan');
