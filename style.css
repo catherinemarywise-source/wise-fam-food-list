@@ -216,6 +216,26 @@ body {
   font-weight: 500;
 }
 
+.header-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #db2777;
+  background-color: #fdf2f8;
+  border: 1px solid #fbcfe8;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 1px 4px rgba(236, 72, 153, 0.08);
+}
+
+.header-date-badge i {
+  color: #ec4899;
+  font-size: 0.85rem;
+}
+
 /* Stats Counter Grid */
 .stats-card {
   background: var(--bg-card);

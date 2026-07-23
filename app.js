@@ -69,8 +69,43 @@ document.addEventListener('DOMContentLoaded', () => {
   initSupabase();
   setupEventListeners();
   restoreSavedUserName();
+  updateUKDateDisplay();
+  setInterval(updateUKDateDisplay, 30000); // Refresh time every 30s
   loadItems();
 });
+
+function updateUKDateDisplay() {
+  try {
+    const now = new Date();
+    const dateOptions = { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric',
+      timeZone: 'Europe/London' 
+    };
+    const timeOptions = {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short',
+      timeZone: 'Europe/London'
+    };
+
+    const formattedDate = now.toLocaleDateString('en-GB', dateOptions);
+    const formattedTime = now.toLocaleTimeString('en-GB', timeOptions);
+
+    // Update document title dynamically
+    document.title = `FreshBasket — ${formattedDate}`;
+
+    // Update header badge
+    const ukDateSpan = document.getElementById('ukDateSpan');
+    if (ukDateSpan) {
+      ukDateSpan.textContent = `${formattedDate} (${formattedTime})`;
+    }
+  } catch (err) {
+    console.error('Error updating UK date display:', err);
+  }
+}
 
 function restoreSavedUserName() {
   if (addedByInput) {
