@@ -71,8 +71,23 @@ document.addEventListener('DOMContentLoaded', () => {
   restoreSavedUserName();
   updateUKDateDisplay();
   setInterval(updateUKDateDisplay, 30000); // Refresh time every 30s
+  registerServiceWorker();
   loadItems();
 });
+
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then((reg) => {
+          console.log('[PWA] Service Worker registered successfully:', reg.scope);
+        })
+        .catch((err) => {
+          console.warn('[PWA] Service Worker registration failed:', err);
+        });
+    });
+  }
+}
 
 function updateUKDateDisplay() {
   try {
